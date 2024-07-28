@@ -1,10 +1,10 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QFileDialog, QWidget, QInputDialog, QMessageBox
+from PyQt5.QtWidgets import QApplication, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QFileDialog, QWidget, QInputDialog, QMessageBox
 from PyQt5.QtGui import QPixmap, QImage, QPainter, QColor, QPen, QMouseEvent
 from PyQt5.QtCore import Qt, QRect
 from PIL import Image
 
-class ImageEditor(QMainWindow):
+class ImageEditor(QWidget):
     def __init__(self):
         super().__init__()
 
@@ -45,10 +45,7 @@ class ImageEditor(QMainWindow):
         self.label_image.mouseReleaseEvent = self.end_selection
         self.main_layout.addWidget(self.label_image)
 
-        # Contenedor principal
-        self.container = QWidget()
-        self.container.setLayout(self.main_layout)
-        self.setCentralWidget(self.container)
+        self.setLayout(self.main_layout)
 
         self.image = None
         self.pixmap = None
