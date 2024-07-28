@@ -1,0 +1,22 @@
+{
+    "amigos": [
+        1,
+        2,
+        3
+    ],
+    "personas": {
+        "tiles": [
+            "D:/Documentos/Python Scripts/tileset_generator/test.png",
+            "D:/Documentos/Python Scripts/tileset_generator/test_casda.png",
+            "D:/Documentos/Python Scripts/tileset_generator/test2.png",
+            "D:/Documentos/Python Scripts/tileset_generator/test3.png"
+        ],
+        "shaders": [
+            "C:/Users/usuario/Pictures/Saved Pictures/1532740717622__01 - copia.jpg",
+            "C:/Users/usuario/Pictures/Saved Pictures/1532740717622__01.jpg",
+            "C:/Users/usuario/Pictures/Saved Pictures/DSC01253.JPG",
+            "C:/Users/usuario/Pictures/Saved Pictures/DSC01261.JPG",
+            "C:/Users/usuario/Pictures/Saved Pictures/DSC01266.JPG"
+        ]
+    }
+}

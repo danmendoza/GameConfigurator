@@ -29,9 +29,13 @@ class JsonEditor(QWidget):
         self.btn_add_child_key.clicked.connect(self.add_child_key)
         self.button_layout.addWidget(self.btn_add_child_key)
         
-        self.btn_delete_key = QPushButton("Borrar clave")  # Nuevo botón
+        self.btn_delete_key = QPushButton("Borrar clave")
         self.btn_delete_key.clicked.connect(self.delete_key)
         self.button_layout.addWidget(self.btn_delete_key)
+        
+        self.btn_modify_value = QPushButton("Modificar Valor")  # Nuevo botón
+        self.btn_modify_value.clicked.connect(self.modify_value)
+        self.button_layout.addWidget(self.btn_modify_value)
 
         self.json_text = QTextEdit(self)
         self.json_text.setReadOnly(True)
@@ -86,21 +90,23 @@ class JsonEditor(QWidget):
         if ok and parent_key:
             child_key, ok = QInputDialog.getText(self, "Crear clave Hijo", "Introduce el nombre de la clave hija:")
             if ok and child_key:
-                value_type, ok = QInputDialog.getItem(self, "Tipo de Valor", "Selecciona el tipo de valor:", ["String", "File Path"], 0, False)
+                value_type, ok = QInputDialog.getItem(self, "Tipo de Valor", "Selecciona el tipo de valor:", ["String", "File Paths"], 0, False)
                 if ok and value_type:
                     if value_type == "String":
                         value, ok = QInputDialog.getText(self, "Crear clave Hijo", "Introduce el valor de la clave hija:")
                         if ok:
-                            if isinstance(self.json_data[parent_key], dict):
-                                self.json_data[parent_key][child_key] = value
+                            parent_dict = self.get_nested_dict(self.json_data, parent_key)
+                            if isinstance(parent_dict, dict):
+                                parent_dict[child_key] = value
                             else:
                                 QMessageBox.warning(self, "Advertencia", "La clave padre no es un objeto JSON válido.")
-                    elif value_type == "File Path":
+                    elif value_type == "File Paths":
                         options = QFileDialog.Options()
-                        file_name, _ = QFileDialog.getOpenFileNames(self, "Selecciona la ruta del archivo", "", "All Files (*)", options=options)
-                        if file_name:
-                            if isinstance(self.json_data[parent_key], dict):
-                                self.json_data[parent_key][child_key] = file_name
+                        files, _ = QFileDialog.getOpenFileNames(self, "Selecciona los archivos", "", "All Files (*)", options=options)
+                        if files:
+                            parent_dict = self.get_nested_dict(self.json_data, parent_key)
+                            if isinstance(parent_dict, dict):
+                                parent_dict[child_key] = files
                             else:
                                 QMessageBox.warning(self, "Advertencia", "La clave padre no es un objeto JSON válido.")
                     self.json_text.setPlainText(json.dumps(self.json_data, indent=4))
@@ -112,19 +118,70 @@ class JsonEditor(QWidget):
 
         key, ok = self.select_parent_key()
         if ok and key:
-            del self.json_data[key]
-            self.json_text.setPlainText(json.dumps(self.json_data, indent=4))
-            QMessageBox.information(self, "Éxito", f"Clave '{key}' borrada correctamente.")
-        else:
-            QMessageBox.warning(self, "Advertencia", "Clave no encontrada o no válida.")
+            parent_dict, last_key = self.get_parent_dict_and_key(self.json_data, key)
+            if parent_dict and last_key:
+                del parent_dict[last_key]
+                self.json_text.setPlainText(json.dumps(self.json_data, indent=4))
+                QMessageBox.information(self, "Éxito", f"Clave '{key}' borrada correctamente.")
+            else:
+                QMessageBox.warning(self, "Advertencia", "Clave no encontrada o no válida.")
+
+    def modify_value(self):
+        if not self.json_data:
+            QMessageBox.warning(self, "Advertencia", "No hay claves para modificar.")
+            return
+
+        key, ok = self.select_parent_key()
+        if ok and key:
+            value_type, ok = QInputDialog.getItem(self, "Tipo de Valor", "Selecciona el tipo de valor:", ["String", "File Paths"], 0, False)
+            if ok and value_type:
+                if value_type == "String":
+                    value, ok = QInputDialog.getText(self, "Modificar Valor", "Introduce el nuevo valor:")
+                    if ok:
+                        parent_dict = self.get_parent_dict_and_key(self.json_data, key)[0]
+                        last_key = key.split('.')[-1]
+                        if isinstance(parent_dict, dict):
+                            parent_dict[last_key] = value
+                        self.json_text.setPlainText(json.dumps(self.json_data, indent=4))
+                elif value_type == "File Paths":
+                    options = QFileDialog.Options()
+                    files, _ = QFileDialog.getOpenFileNames(self, "Selecciona los archivos", "", "All Files (*)", options=options)
+                    if files:
+                        parent_dict = self.get_parent_dict_and_key(self.json_data, key)[0]
+                        last_key = key.split('.')[-1]
+                        if isinstance(parent_dict, dict):
+                            parent_dict[last_key] = files
+                            
+                        self.json_text.setPlainText(json.dumps(self.json_data, indent=4))
 
     def select_parent_key(self):
-        keys = list(self.json_data.keys())
+        keys = self.get_all_keys(self.json_data)
         if not keys:
             return None, False
 
-        key, ok = QInputDialog.getItem(self, "Seleccionar clave Padre", "Selecciona una clave padre:", keys, 0, False)
+        key, ok = QInputDialog.getItem(self, "Seleccionar clave", "Selecciona una clave:", keys, 0, False)
         return key, ok
+
+    def get_all_keys(self, dictionary, parent_key=''):
+        keys = []
+        for key, value in dictionary.items():
+            full_key = f"{parent_key}.{key}" if parent_key else key
+            keys.append(full_key)
+            if isinstance(value, dict):
+                keys.extend(self.get_all_keys(value, full_key))
+        return keys
+
+    def get_nested_dict(self, dictionary, key):
+        keys = key.split('.')
+        for k in keys:
+            dictionary = dictionary[k]
+        return dictionary
+
+    def get_parent_dict_and_key(self, dictionary, key):
+        keys = key.split('.')
+        for k in keys[:-1]:
+            dictionary = dictionary[k]
+        return dictionary, keys[-1]
 
     def save_json_file(self):
         if not self.current_file:
