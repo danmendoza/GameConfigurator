@@ -86,15 +86,23 @@ class JsonEditor(QWidget):
         if ok and parent_key:
             child_key, ok = QInputDialog.getText(self, "Crear clave Hijo", "Introduce el nombre de la clave hija:")
             if ok and child_key:
-                value, ok = QInputDialog.getText(self, "Crear clave Hijo", "Introduce el valor de la clave hija:")
-                if ok:
-                    if isinstance(self.json_data[parent_key], dict):
-                        try:
-                            self.json_data[parent_key][child_key] = json.loads(value)
-                        except json.JSONDecodeError:
-                            self.json_data[parent_key][child_key] = value
-                    else:
-                        QMessageBox.warning(self, "Advertencia", "La clave padre no es un objeto JSON válido.")
+                value_type, ok = QInputDialog.getItem(self, "Tipo de Valor", "Selecciona el tipo de valor:", ["String", "File Path"], 0, False)
+                if ok and value_type:
+                    if value_type == "String":
+                        value, ok = QInputDialog.getText(self, "Crear clave Hijo", "Introduce el valor de la clave hija:")
+                        if ok:
+                            if isinstance(self.json_data[parent_key], dict):
+                                self.json_data[parent_key][child_key] = value
+                            else:
+                                QMessageBox.warning(self, "Advertencia", "La clave padre no es un objeto JSON válido.")
+                    elif value_type == "File Path":
+                        options = QFileDialog.Options()
+                        file_name, _ = QFileDialog.getOpenFileNames(self, "Selecciona la ruta del archivo", "", "All Files (*)", options=options)
+                        if file_name:
+                            if isinstance(self.json_data[parent_key], dict):
+                                self.json_data[parent_key][child_key] = file_name
+                            else:
+                                QMessageBox.warning(self, "Advertencia", "La clave padre no es un objeto JSON válido.")
                     self.json_text.setPlainText(json.dumps(self.json_data, indent=4))
 
     def delete_key(self):
