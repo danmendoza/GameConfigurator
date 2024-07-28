@@ -4,7 +4,7 @@ from PyQt5.QtGui import QPixmap, QImage, QPainter, QColor, QPen, QMouseEvent
 from PyQt5.QtCore import Qt, QRect
 from PIL import Image
 
-class ImageEditor(QWidget):
+class TilesGenerator(QWidget):
     def __init__(self):
         super().__init__()
 
