@@ -5,8 +5,10 @@ from PyQt5.QtCore import Qt, QRect
 from PIL import Image
 
 class TilesGenerator(QWidget):
-    def __init__(self):
+    def __init__(self, project_location=""):
         super().__init__()
+
+        self.project_location = project_location
 
         self.setWindowTitle("Editor de Imágenes")
         self.setGeometry(100, 100, 800, 600)
@@ -55,7 +57,7 @@ class TilesGenerator(QWidget):
 
     def open_image(self):
         options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getOpenFileName(self, "Seleccionar Imagen", "", "Archivos de Imagen (*.png *.jpg *.jpeg)", options=options)
+        fileName, _ = QFileDialog.getOpenFileName(self, "Seleccionar Imagen", self.project_location, "", "Archivos de Imagen (*.png *.jpg *.jpeg)", options=options)
         if fileName:
             self.show_image(fileName)
 
@@ -188,7 +190,7 @@ class TilesGenerator(QWidget):
                                               (y - min(c[1] for c in self.selected_cells)) * self.cell_size))
 
         # Guardar la imagen resultante
-        filePath, _ = QFileDialog.getSaveFileName(self, "Guardar Imagen", "", "PNG Files (*.png);;JPEG Files (*.jpg);;All Files (*)")
+        filePath, _ = QFileDialog.getSaveFileName(self, "Guardar Imagen", self.project_location, "", "PNG Files (*.png);;JPEG Files (*.jpg);;All Files (*)")
         if filePath:
             selected_image.save(filePath)
 

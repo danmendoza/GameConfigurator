@@ -2,9 +2,11 @@ import json
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QFileDialog, QTextEdit, QMessageBox, QInputDialog, QComboBox
 
 class JsonEditor(QWidget):
-    def __init__(self):
+    def __init__(self, project_location):
         super().__init__()
 
+        self.project_location = project_location
+        
         self.setWindowTitle("Editor de JSON")
         self.setGeometry(100, 100, 800, 600)
 
@@ -55,7 +57,7 @@ class JsonEditor(QWidget):
 
     def open_json_file(self):
         options = QFileDialog.Options()
-        file_name, _ = QFileDialog.getOpenFileName(self, "Abrir Archivo JSON", "", "JSON Files (*.json);;All Files (*)", options=options)
+        file_name, _ = QFileDialog.getOpenFileName(self, "Abrir Archivo JSON", self.project_location, "", "JSON Files (*.json);;All Files (*)", options=options)
         if file_name:
             try:
                 with open(file_name, 'r', encoding='utf-8') as file:
@@ -102,7 +104,7 @@ class JsonEditor(QWidget):
                                 QMessageBox.warning(self, "Advertencia", "La clave padre no es un objeto JSON válido.")
                     elif value_type == "File Paths":
                         options = QFileDialog.Options()
-                        files, _ = QFileDialog.getOpenFileNames(self, "Selecciona los archivos", "", "All Files (*)", options=options)
+                        files, _ = QFileDialog.getOpenFileNames(self, "Selecciona los archivos", self.project_location, "", "All Files (*)", options=options)
                         if files:
                             parent_dict = self.get_nested_dict(self.json_data, parent_key)
                             if isinstance(parent_dict, dict):
@@ -145,7 +147,7 @@ class JsonEditor(QWidget):
                         self.json_text.setPlainText(json.dumps(self.json_data, indent=4))
                 elif value_type == "File Paths":
                     options = QFileDialog.Options()
-                    files, _ = QFileDialog.getOpenFileNames(self, "Selecciona los archivos", "", "All Files (*)", options=options)
+                    files, _ = QFileDialog.getOpenFileNames(self, "Selecciona los archivos", self.project_location, "", "All Files (*)", options=options)
                     if files:
                         parent_dict = self.get_parent_dict_and_key(self.json_data, key)[0]
                         last_key = key.split('.')[-1]
@@ -186,7 +188,7 @@ class JsonEditor(QWidget):
     def save_json_file(self):
         if not self.current_file:
             options = QFileDialog.Options()
-            file_name, _ = QFileDialog.getSaveFileName(self, "Guardar Archivo JSON", "", "JSON Files (*.json);;All Files (*)", options=options)
+            file_name, _ = QFileDialog.getSaveFileName(self, "Guardar Archivo JSON", self.project_location, "", "JSON Files (*.json);;All Files (*)", options=options)
             if not file_name:
                 return
             self.current_file = file_name
